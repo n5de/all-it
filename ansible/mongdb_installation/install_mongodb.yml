@@ -1,0 +1,10 @@
+---
+- name: Install and enable MongoDB
+  hosts: mongo_servers
+  become: yes
+  become_user: root
+  tasks:
+    - name: Installing MongoDB
+      yum: name=mongodb-org state=present enablerepo=MongoDB-mongodb-org-3.2
+    - name: Staring and enabling MongoDB
+      service: name=mongod state=started enabled=yes

@@ -1,0 +1,14 @@
+---
+- name: Create MongoDB repo mongodb-org-3.2
+  hosts: mongo_servers
+  become: yes
+  become_user: root
+  tasks:
+    - name: Creating repo
+      yum_repository:
+       name: MongoDB-mongodb-org-3.2
+       description: mongodb-org-3.2
+       baseurl: https://repo.mongodb.org/yum/redhat/$releasever/mongodb-org/3.2/x86_64/
+       gpgcheck: yes
+       enabled: yes
+       gpgkey: https://www.mongodb.org/static/pgp/server-3.2.asc
