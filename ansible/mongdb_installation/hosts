@@ -1,0 +1,2 @@
+[mongo_servers]
+vmdbmongodb[01:02]
