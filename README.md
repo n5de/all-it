@@ -2,4 +2,4 @@
 
 All files publised on: 
 
-https://allit-lpam.blogspot.mx
+https://allit-lpam.blogspot.mx/
