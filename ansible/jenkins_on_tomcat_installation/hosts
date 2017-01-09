@@ -1,0 +1,2 @@
+[jenkins_servers]
+vmjenkins0[1:2]
