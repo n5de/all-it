@@ -1,0 +1,58 @@
+---
+- name: Install tomcat and deploy jenkins 
+  hosts: jenkins_servers
+  become: yes
+  become_user: root
+  tasks: 
+   - name: Create tomcat user with no login nor shell
+     user: name=tomcats createhome=no shell=/sbin/nologin state=present
+   
+   - name: Unzip apache on /opt
+     unarchive: src=apache-tomcat-8.5.9.tar.gz dest=/opt/ owner=tomcats
+   
+   - name: Move jdk rpm file
+     copy: src=jdk-7u79-linux-x64.rpm dest=/tmp/
+   
+   - name: Install local rpm
+     yum: name=/tmp/jdk-7u79-linux-x64.rpm state=present
+
+   - name: Set JAVA_HOME into bashrc
+     lineinfile: dest=/root/.bashrc create=yes state=present line="export JAVA_HOME=/usr/java/jdk1.7.0_79/jre/"
+   
+   - name: Set JENKINS_HOME in context.xml
+     lineinfile: dest=/opt/apache-tomcat-8.5.9/conf/context.xml state=present line="<Environment name=\"JENKINS_HOME\" value=\"/opt/.jenkins/\" type=\"java.lang.String\"/>" insertafter="<Context>"
+  
+   - name: Create Jenkins home 
+     file: dest=/opt/.jenkins state=directory owner=tomcats
+
+   - name: Create Tomcat as service
+     copy: src=tomcat dest=/etc/init.d/ mode=0755 owner=root
+
+   - name: Reload deamon
+     shell: systemctl daemon-reload
+  
+   - name: Create Jenkins folder  
+     file: dest=/opt/jenkins state=directory owner=tomcats
+  
+   - name: Deploy Jenkins
+     copy: src=jenkins.war dest=/opt/jenkins/ owner=tomcats
+
+   - name: Create SymLink to jenkins.war
+     file: dest=/opt/apache-tomcat-8.5.9/webapps/jenkins.war src=/opt/jenkins/jenkins.war state=link owner=tomcats
+
+   - name: Remove default index
+     file: path=/opt/apache-tomcat-8.5.9/webapps/ROOT/index.jsp state=absent
+     
+   - name: Add redirect action to Jenkins  
+     blockinfile:
+        dest: /opt/apache-tomcat-8.5.9/webapps/ROOT/index.jsp
+        create: yes
+        state: present
+        owner: tomcats
+        block: |
+          <%
+             response.sendRedirect("../jenkins");
+          %>
+   
+   - name: Start Tomcat
+     service: name=tomcat state=started
